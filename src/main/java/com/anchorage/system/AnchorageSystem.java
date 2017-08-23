@@ -23,6 +23,7 @@
  */
 package com.anchorage.system;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +37,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import com.anchorage.docks.containers.subcontainers.DockSplitterContainer;
 import com.anchorage.docks.containers.subcontainers.DockTabberContainer;
@@ -46,11 +48,8 @@ import com.anchorage.docks.stations.DockSubStation;
 import com.sun.javafx.css.StyleManager;
 
 import javafx.scene.Node;
-import javafx.scene.image.Image;
-import javafx.scene.layout.Pane;
-import javafx.scene.control.Control;
 import javafx.scene.Parent;
-import javafx.scene.layout.StackPane;
+import javafx.scene.image.Image;
 
 /**
  *
@@ -143,17 +142,18 @@ public class AnchorageSystem {
     
     /**
      * Saves layout of the DockStation.
+     * <br/><b>Warning:</b> Does not work with multiple instances of one UI class. 
      * 
      * @param rootDockStation Root dock station
+     * @param filePath file path where to save layout.
      * @return boolean if saving layout has been successful.
      */
-    public static boolean saveLayout(DockStation rootDockStation) {
+    public static boolean saveLayout(DockStation rootDockStation, final String filePath) {
         if (rootDockStation.getChildren().isEmpty()) {
             return false;
         }
         
         final Parent rootNode = rootDockStation;
-//        System.out.println(currentNode.getClass().getName());
         
         DocumentBuilderFactory icFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder icBuilder;
@@ -167,20 +167,53 @@ public class AnchorageSystem {
 
             System.out.println("XML DOM created successfully");
             
-            // output DOM XML to console 
+            // DOM XML output
             Transformer transformer = TransformerFactory.newInstance().newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes"); 
             DOMSource source = new DOMSource(doc);
-            StreamResult console = new StreamResult(System.out);
-            transformer.transform(source, console);
- 
+            StreamResult result = new StreamResult(new File(filePath));
+            transformer.transform(source, result);
+            
+            // console output
+            // StreamResult console = new StreamResult(System.out); 
+            // transformer.transform(source, console);
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
-        
         return true;
     }
     
+    /**
+     * Restores layout of already docked nodes.
+     * 
+     * @param dockStation DockStation with all docked nodes.
+     * @param filePath Path to file, where layout is saved.
+     * @return boolean if restoring layout has been successful.
+     */
+    public static boolean restoreLayout(final DockStation dockStation, final String filePath) {
+    	// TODO: Complete implementation
+    	try {	
+            File inputFile = new File(filePath);
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            Document doc = dBuilder.parse(inputFile);
+
+            System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
+            
+            NodeList list = doc.getDocumentElement().getChildNodes();
+            
+            for (int i = 0; i < list.getLength(); i++) {
+            	System.out.println(list.item(i).getNodeName());
+            }
+
+            
+         } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+         }
+    	return true;
+    }
         
     private static void parseTree(final Parent parent, final Document doc, final Element element) {
         if (!parent.getChildrenUnmodifiable().isEmpty()) {
@@ -213,6 +246,7 @@ public class AnchorageSystem {
             		childElement = element;
             	}
 
+            	// Append UI element or dig deeper
                 if (child instanceof DockUIPanel && !(parent instanceof DockSubStation)) {
                 	Element uiElement = doc.createElement(((DockUIPanel)child).getNodeContent().getClass().getSimpleName().trim().replaceAll("/[^A-Za-z]/", ""));
                 	childElement.appendChild(uiElement);
