@@ -155,6 +155,7 @@ public class AnchorageSystem {
                     System.out.println();
                     System.out.println(((DockUIPanel)child).getNodeContent());
                     System.out.println();
+                    
                     return;
                 }
                 
