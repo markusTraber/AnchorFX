@@ -140,27 +140,48 @@ public class AnchorageSystem {
         }
         
         final Parent currentNode = rootDockStation;
-        System.out.println(currentNode.getClass().getName());
-        visit(currentNode);
+//        System.out.println(currentNode.getClass().getName());
+        visit(currentNode, 0);
+        
+        
+        System.out.println("################################");
+        System.out.println(sb.toString());
         
         return true;
     }
+    
+    private static StringBuilder sb = new StringBuilder();
+    private static final String spacer = "    ";
         
-    private static void visit(Parent parent) {        
+    private static void visit(Parent parent, final int level) {
+//    	System.out.println(level);
         if (!parent.getChildrenUnmodifiable().isEmpty()) {
             for (Node child: parent.getChildrenUnmodifiable()) {
                 
                 System.out.println(child.getClass().getName());
+                for (int i = 0; i < level; i++) {
+                	sb.append(spacer);
+                }
+                sb.append(child.getClass().getName());
+                sb.append("\n");
+                
                 if (child instanceof DockUIPanel) {
                     System.out.println();
                     System.out.println(((DockUIPanel)child).getNodeContent());
                     System.out.println();
                     
+                    for (int i = 0; i < level+1; i++) {
+                    	sb.append(spacer);
+                    }
+                    sb.append(((DockUIPanel)child).getNodeContent());
+                    sb.append("\n");
+                    
                     return;
                 }
                 
                 if (child instanceof Parent) {
-                    visit((Parent)child);
+                	final int newLevel = level + 1 ;
+                    visit((Parent)child, newLevel);
                 }
               
             }
