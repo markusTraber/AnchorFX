@@ -23,17 +23,21 @@
  */
 package com.anchorage.system;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.anchorage.docks.node.DockNode;
 import com.anchorage.docks.node.ui.DockUIPanel;
 import com.anchorage.docks.stations.DockStation;
 import com.anchorage.docks.stations.DockSubStation;
 import com.sun.javafx.css.StyleManager;
-import javafx.scene.Parent;
 
-import java.util.ArrayList;
-import java.util.List;
 import javafx.scene.Node;
 import javafx.scene.image.Image;
+import javafx.scene.layout.Pane;
+import javafx.scene.control.Control;
+import javafx.scene.Parent;
+import javafx.scene.layout.StackPane;
 
 /**
  *
@@ -122,5 +126,43 @@ public class AnchorageSystem {
             }
         }
 
+    }
+    
+    /**
+     * Saves layout of the DockStation.
+     * 
+     * @param rootDockStation Root dock station
+     * @return boolean if saving layout has been successful.
+     */
+    public static boolean saveLayout(DockStation rootDockStation) {
+        if (rootDockStation.getChildren().isEmpty()) {
+            return false;
+        }
+        
+        final Parent currentNode = rootDockStation;
+        System.out.println(currentNode.getClass().getName());
+        visit(currentNode);
+        
+        return true;
+    }
+        
+    private static void visit(Parent parent) {        
+        if (!parent.getChildrenUnmodifiable().isEmpty()) {
+            for (Node child: parent.getChildrenUnmodifiable()) {
+                
+                System.out.println(child.getClass().getName());
+                if (child instanceof DockUIPanel) {
+                    System.out.println();
+                    System.out.println(((DockUIPanel)child).getNodeContent());
+                    System.out.println();
+                    return;
+                }
+                
+                if (child instanceof Parent) {
+                    visit((Parent)child);
+                }
+              
+            }
+        }
     }
 }
