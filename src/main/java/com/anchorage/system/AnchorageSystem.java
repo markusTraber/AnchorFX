@@ -26,6 +26,17 @@ package com.anchorage.system;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 import com.anchorage.docks.node.DockNode;
 import com.anchorage.docks.node.ui.DockUIPanel;
 import com.anchorage.docks.stations.DockStation;
@@ -139,49 +150,61 @@ public class AnchorageSystem {
             return false;
         }
         
-        final Parent currentNode = rootDockStation;
+        final Parent rootNode = rootDockStation;
 //        System.out.println(currentNode.getClass().getName());
-        visit(currentNode, 0);
         
+        DocumentBuilderFactory icFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder icBuilder;
         
-        System.out.println("################################");
-        System.out.println(sb.toString());
+        try {
+            icBuilder = icFactory.newDocumentBuilder();
+            Document doc = icBuilder.newDocument();
+            Element mainRootElement = doc.createElement(rootNode.getClass().getSimpleName().trim());
+            doc.appendChild(mainRootElement);
+            visit(rootNode, doc, mainRootElement);
+
+            System.out.println("\nXML DOM Created Successfully..");
+            System.out.println();
+            
+            // output DOM XML to console 
+            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes"); 
+            DOMSource source = new DOMSource(doc);
+            StreamResult console = new StreamResult(System.out);
+            transformer.transform(source, console);
+ 
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         
         return true;
     }
     
-    private static StringBuilder sb = new StringBuilder();
-    private static final String spacer = "    ";
         
-    private static void visit(Parent parent, final int level) {
-//    	System.out.println(level);
+    private static void visit(final Parent parent, final Document doc, final Element element) {
         if (!parent.getChildrenUnmodifiable().isEmpty()) {
             for (Node child: parent.getChildrenUnmodifiable()) {
                 
-                System.out.println(child.getClass().getName());
-                for (int i = 0; i < level; i++) {
-                	sb.append(spacer);
-                }
-                sb.append(child.getClass().getName());
-                sb.append("\n");
-                
+            	// create and append child element
+            	System.out.println("child: " + child.getClass().getSimpleName().trim().replaceAll("/[^A-Za-z]/", ""));
+//            	Element childElement = doc.createElement(child.getClass().getTypeName().trim());
+            	if (child.getClass().getSimpleName().trim().replaceAll("/[^A-Za-z]/", "").isEmpty()) {
+            		System.out.println("empty");
+            		return;
+            	}
+            	Element childElement = doc.createElement(child.getClass().getSimpleName().trim().replaceAll("/[^A-Za-z]/", ""));
+            	
+//                childElement.setAttribute("id", id);
+//                childElement.appendChild(getCompanyElements(doc, childElement, "Name", name));
+//                childElement.appendChild(getCompanyElements(doc, childElement, "Type", age));
+//                childElement.appendChild(getCompanyElements(doc, childElement, "Employees", role));
+            	element.appendChild(childElement);
+
                 if (child instanceof DockUIPanel) {
-                    System.out.println();
-                    System.out.println(((DockUIPanel)child).getNodeContent());
-                    System.out.println();
-                    
-                    for (int i = 0; i < level+1; i++) {
-                    	sb.append(spacer);
-                    }
-                    sb.append(((DockUIPanel)child).getNodeContent());
-                    sb.append("\n");
-                    
-                    return;
-                }
-                
-                if (child instanceof Parent) {
-                	final int newLevel = level + 1 ;
-                    visit((Parent)child, newLevel);
+                	Element uiElement = doc.createElement(((DockUIPanel)child).getNodeContent().getClass().getSimpleName().trim().replaceAll("/[^A-Za-z]/", ""));
+                	childElement.appendChild(uiElement);
+                } else if (child instanceof Parent) {
+                    visit((Parent)child, doc, childElement);
                 }
               
             }
