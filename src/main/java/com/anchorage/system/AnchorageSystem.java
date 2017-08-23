@@ -37,6 +37,8 @@ import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.anchorage.docks.containers.subcontainers.DockSplitterContainer;
+import com.anchorage.docks.containers.subcontainers.DockTabberContainer;
 import com.anchorage.docks.node.DockNode;
 import com.anchorage.docks.node.ui.DockUIPanel;
 import com.anchorage.docks.stations.DockStation;
@@ -161,10 +163,9 @@ public class AnchorageSystem {
             Document doc = icBuilder.newDocument();
             Element mainRootElement = doc.createElement(rootNode.getClass().getSimpleName().trim());
             doc.appendChild(mainRootElement);
-            visit(rootNode, doc, mainRootElement);
+            parseTree(rootNode, doc, mainRootElement);
 
-            System.out.println("\nXML DOM Created Successfully..");
-            System.out.println();
+            System.out.println("XML DOM created successfully");
             
             // output DOM XML to console 
             Transformer transformer = TransformerFactory.newInstance().newTransformer();
@@ -181,30 +182,42 @@ public class AnchorageSystem {
     }
     
         
-    private static void visit(final Parent parent, final Document doc, final Element element) {
+    private static void parseTree(final Parent parent, final Document doc, final Element element) {
         if (!parent.getChildrenUnmodifiable().isEmpty()) {
             for (Node child: parent.getChildrenUnmodifiable()) {
-                
-            	// create and append child element
-            	System.out.println("child: " + child.getClass().getSimpleName().trim().replaceAll("/[^A-Za-z]/", ""));
-//            	Element childElement = doc.createElement(child.getClass().getTypeName().trim());
-            	if (child.getClass().getSimpleName().trim().replaceAll("/[^A-Za-z]/", "").isEmpty()) {
-            		System.out.println("empty");
-            		return;
-            	}
-            	Element childElement = doc.createElement(child.getClass().getSimpleName().trim().replaceAll("/[^A-Za-z]/", ""));
             	
-//                childElement.setAttribute("id", id);
-//                childElement.appendChild(getCompanyElements(doc, childElement, "Name", name));
-//                childElement.appendChild(getCompanyElements(doc, childElement, "Type", age));
-//                childElement.appendChild(getCompanyElements(doc, childElement, "Employees", role));
-            	element.appendChild(childElement);
+            	final boolean allowedClasses = child instanceof DockSplitterContainer || child instanceof DockNode || child instanceof DockTabberContainer || /*child instanceof DockStation ||*/ child instanceof DockSubStation;
+            	Element childElement;
+            	
+            	// Omit elements, that are not necessary.
+            	if (allowedClasses) {
+                	// create and append child element
+            		final String elementName = child.getClass().getSimpleName().trim().replaceAll("/[^A-Za-z]/", "");
+                	childElement = doc.createElement(elementName);
+                	
+                	switch (elementName) {
+					case "DockSplitterContainer":
+							DockSplitterContainer container = (DockSplitterContainer) child;
+							String dividerpositions = "";
+							for (double position : container.getDividerPositions()) {
+								dividerpositions += position + " ";
+							}
+							childElement.setAttribute("dividerPositions", dividerpositions);
+							childElement.setAttribute("orientation", container.getOrientation().toString());
+						break;
+					default:
+						break;
+					}
+                	element.appendChild(childElement);
+            	} else {
+            		childElement = element;
+            	}
 
-                if (child instanceof DockUIPanel) {
+                if (child instanceof DockUIPanel && !(parent instanceof DockSubStation)) {
                 	Element uiElement = doc.createElement(((DockUIPanel)child).getNodeContent().getClass().getSimpleName().trim().replaceAll("/[^A-Za-z]/", ""));
                 	childElement.appendChild(uiElement);
                 } else if (child instanceof Parent) {
-                    visit((Parent)child, doc, childElement);
+                    parseTree((Parent)child, doc, childElement);
                 }
               
             }
