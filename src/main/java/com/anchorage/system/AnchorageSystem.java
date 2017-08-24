@@ -163,7 +163,7 @@ public class AnchorageSystem {
             Document doc = icBuilder.newDocument();
             Element mainRootElement = doc.createElement(rootNode.getClass().getSimpleName().trim());
             doc.appendChild(mainRootElement);
-            parseTree(rootNode, doc, mainRootElement);
+            parseStationTree(rootNode, doc, mainRootElement, 0);
 
             System.out.println("XML DOM created successfully");
             
@@ -197,16 +197,27 @@ public class AnchorageSystem {
             File inputFile = new File(filePath);
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            Document doc = dBuilder.parse(inputFile);
+            Document doc = dBuilder.parse(inputFile);            
 
-            System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
+//            handleNode(dockStation, doc.getFirstChild());
             
-            NodeList list = doc.getDocumentElement().getChildNodes();
             
-            for (int i = 0; i < list.getLength(); i++) {
-            	System.out.println(list.item(i).getNodeName());
+            
+            NodeList list = doc.getChildNodes();
+            boolean searching = true;
+            
+            
+            while (searching) {
+                
+                for (int i = 0; i < list.getLength(); i++) {
+                    if (list.item(i).getNodeName().equals("#text")) {
+                        continue;
+                    }
+                }                
             }
-
+            
+            
+ 
             
          } catch (Exception e) {
             e.printStackTrace();
@@ -214,8 +225,46 @@ public class AnchorageSystem {
          }
     	return true;
     }
+    
+    private static void handleNode(DockStation station, org.w3c.dom.Node node) {
+        NodeList list = node.getChildNodes();
         
-    private static void parseTree(final Parent parent, final Document doc, final Element element) {
+        for (int i = 0; i < list.getLength(); i++) {
+            if (list.item(i).getNodeName().equals("#text")) {
+                continue;
+            }
+            System.out.println(list.item(i).getNodeName());
+            
+            switch (list.item(i).getNodeName()) {
+                case "DockSplitterContainer":
+                    handleSplitterContainer(station, list.item(i));
+                    break;
+                case "DockTabberContainer":
+                    handleTabberContainer(station, list.item(i));
+                    break;
+                case "DockSubStation":
+                    handleSubStation(station, list.item(i));
+                    break;
+                default:
+                    System.out.println("default");
+                    break;
+            }
+        }
+    }
+    
+    private static void handleSplitterContainer(DockStation station, org.w3c.dom.Node node) {
+        
+    }
+    
+    private static void handleTabberContainer(DockStation station, org.w3c.dom.Node node) {
+        
+    }
+    
+    private static void handleSubStation(DockStation station, org.w3c.dom.Node node) {
+        
+    }
+        
+    private static void parseStationTree(final Parent parent, final Document doc, final Element element, final int level) {
         if (!parent.getChildrenUnmodifiable().isEmpty()) {
             for (Node child: parent.getChildrenUnmodifiable()) {
             	
@@ -224,6 +273,7 @@ public class AnchorageSystem {
             	
             	// Omit elements, that are not necessary.
             	if (allowedClasses) {
+            	    
                 	// create and append child element
             		final String elementName = child.getClass().getSimpleName().trim().replaceAll("/[^A-Za-z]/", "");
                 	childElement = doc.createElement(elementName);
@@ -238,6 +288,11 @@ public class AnchorageSystem {
 							childElement.setAttribute("dividerPositions", dividerpositions);
 							childElement.setAttribute("orientation", container.getOrientation().toString());
 						break;
+					case "DockNode":
+					    DockUIPanel dockUIPanel = ((DockNode) child).getContent();
+					    childElement.setAttribute("name", dockUIPanel.titleProperty().get());
+					    childElement.setAttribute("level", Integer.toString(level));
+					    break;
 					default:
 						break;
 					}
@@ -251,7 +306,8 @@ public class AnchorageSystem {
                 	Element uiElement = doc.createElement(((DockUIPanel)child).getNodeContent().getClass().getSimpleName().trim().replaceAll("/[^A-Za-z]/", ""));
                 	childElement.appendChild(uiElement);
                 } else if (child instanceof Parent) {
-                    parseTree((Parent)child, doc, childElement);
+                    final int newLevel = level + 1;
+                    parseStationTree((Parent)child, doc, childElement, newLevel);
                 }
               
             }

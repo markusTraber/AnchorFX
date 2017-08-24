@@ -70,17 +70,20 @@ public class AnchorFX_layoutTest extends Application {
         node5.dock(node4, DockNode.DockPosition.CENTER);
 
         // SubStation
-        DockSubStation subStation = AnchorageSystem.createSubStation(station, "SubStation");
+//        DockSubStation subStation = AnchorageSystem.createSubStation(station, "SubStation");
+//        
+//        DockNode dockSubNode1 = AnchorageSystem.createDock("dockSubNode1", generateRandomTree());
+//        DockNode dockSubNode2 = AnchorageSystem.createDock("dockSubNode2", generateRandomTree());
+//        DockNode dockSubNode3 = AnchorageSystem.createDock("dockSubNode3", generateRandomTree());
+//        
+//        dockSubNode1.dock(subStation, DockNode.DockPosition.CENTER);
+//        dockSubNode2.dock(subStation, DockNode.DockPosition.CENTER);
+//        dockSubNode3.dock(subStation, DockNode.DockPosition.RIGHT);
+//        
+//        subStation.dock(station, DockNode.DockPosition.BOTTOM);
         
-        DockNode dockSubNode1 = AnchorageSystem.createDock("dockSubNode1", generateRandomTree());
-        DockNode dockSubNode2 = AnchorageSystem.createDock("dockSubNode2", generateRandomTree());
-        DockNode dockSubNode3 = AnchorageSystem.createDock("dockSubNode3", generateRandomTree());
-        
-        dockSubNode1.dock(subStation, DockNode.DockPosition.CENTER);
-        dockSubNode2.dock(subStation, DockNode.DockPosition.CENTER);
-        dockSubNode3.dock(subStation, DockNode.DockPosition.RIGHT);
-        
-        subStation.dock(station, DockNode.DockPosition.BOTTOM);
+        DockNode node6 = AnchorageSystem.createDock("Node6", generateRandomTree());
+        node6.dock(station, DockNode.DockPosition.BOTTOM);
 
         primaryStage.setTitle("AnchorFX ");
         primaryStage.setScene(scene);
@@ -88,9 +91,10 @@ public class AnchorFX_layoutTest extends Application {
         
         AnchorageSystem.installDefaultStyle();
         
-        AnchorageSystem.saveLayout(station, "/Users/markus/Downloads/layout/layout.xml");
-        
-        AnchorageSystem.restoreLayout(station, "/Users/markus/Downloads/layout/layout.xml");
+//        AnchorageSystem.saveLayout(station, "/Users/markus/Downloads/layout/layout.xml");
+//        AnchorageSystem.restoreLayout(station, "/Users/markus/Downloads/layout/layout.xml");
+        AnchorageSystem.saveLayout(station, "C:\\Users\\mt14567\\Downloads\\layout\\layout.xml");
+        AnchorageSystem.restoreLayout(station, "C:\\Users\\mt14567\\Downloads\\layout\\layout.xml");
     }
 
     private TreeView<String> generateRandomTree() {
