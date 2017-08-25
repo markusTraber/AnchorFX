@@ -91,10 +91,10 @@ public class AnchorFX_layoutTest extends Application {
         
         AnchorageSystem.installDefaultStyle();
         
-//        AnchorageSystem.saveLayout(station, "/Users/markus/Downloads/layout/layout.xml");
-//        AnchorageSystem.restoreLayout(station, "/Users/markus/Downloads/layout/layout.xml");
-        AnchorageSystem.saveLayout(station, "C:\\Users\\mt14567\\Downloads\\layout\\layout.xml");
-        AnchorageSystem.restoreLayout(station, "C:\\Users\\mt14567\\Downloads\\layout\\layout.xml");
+        AnchorageSystem.saveLayout(station, "/Users/markus/Downloads/layout/layout.xml");
+        AnchorageSystem.restoreLayout(station, "/Users/markus/Downloads/layout/layout.xml");
+//        AnchorageSystem.saveLayout(station, "C:\\Users\\mt14567\\Downloads\\layout\\layout.xml");
+//        AnchorageSystem.restoreLayout(station, "C:\\Users\\mt14567\\Downloads\\layout\\layout.xml");
     }
 
     private TreeView<String> generateRandomTree() {

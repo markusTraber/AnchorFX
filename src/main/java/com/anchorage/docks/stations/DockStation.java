@@ -118,6 +118,10 @@ public final class DockStation extends SingleDockContainer {
       node.stationProperty().set(null);
     }
   }
+  
+  public List<DockNode> getDockNodes() {
+	  return nodes;
+  }
 
   public void searchTargetNode(double x, double y) {
     selected = false;
