@@ -253,73 +253,71 @@ public class AnchorageSystem {
      * @return boolean if restoring layout has been successful.
      */
     public static boolean restoreLayout(final DockStation dockStation, final String filePath) {
-    	// TODO: Complete implementation
-    	try {	
-            File inputFile = new File(filePath);
-            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            Document doc = dBuilder.parse(inputFile);                        
-            
-            NodeList list = doc.getElementsByTagName("DockNode");
-            
-            // Return if no elements in station
-            if (list.getLength() == 0) {
-            	return false;
-            }
-            
-            org.w3c.dom.Node startNode = list.item(0);
-            
-            for (int i = 1; i < list.getLength(); i++) {
-            	int currentIndex = Integer.parseInt(startNode.getAttributes().getNamedItem("index").getNodeValue());
-            	int newIndex = Integer.parseInt(list.item(i).getAttributes().getNamedItem("index").getNodeValue());
-
-            	if (newIndex > currentIndex) {
-            		startNode = list.item(i);
-            	}
-            }
-            System.out.println("############ StartNode");
-            System.out.println(startNode.getNodeName());
-            System.out.println(startNode.getAttributes().getNamedItem("index").getNodeValue());
-            System.out.println(startNode.getAttributes().getNamedItem("name").getNodeValue());
-            System.out.println("############ StartNode End");
-            System.out.println();
-            
-            // Get all already docked DockNodes and remove all already docked nodes
-            final List<DockNode> dockNodeList = new ArrayList<DockNode>(dockStation.getDockNodes());
-            for (DockNode dockNode : dockNodeList) {
-            	dockNode.undock();
-//            	System.out.println(dockNode.getContent().titleProperty().get());
-            }
-//            System.out.println();
-//            System.out.println();
-            
-            handleNode(dockStation, dockNodeList, startNode.getParentNode());
-            
-         } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-         }
-    	return true;
+	    	try {	
+	            File inputFile = new File(filePath);
+	            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+	            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+	            Document doc = dBuilder.parse(inputFile);                        
+	            
+	            NodeList list = doc.getElementsByTagName("DockNode");
+	            
+	            // Return if no elements in station
+	            if (list.getLength() == 0) {
+	            	return false;
+	            }
+	            
+	            org.w3c.dom.Node startNode = list.item(0);
+	            
+	            for (int i = 1; i < list.getLength(); i++) {
+	            	int currentIndex = Integer.parseInt(startNode.getAttributes().getNamedItem("index").getNodeValue());
+	            	int newIndex = Integer.parseInt(list.item(i).getAttributes().getNamedItem("index").getNodeValue());
+	
+	            	if (newIndex > currentIndex) {
+	            		startNode = list.item(i);
+	            	}
+	            }
+	            System.out.println("############ StartNode");
+	            System.out.println(startNode.getNodeName());
+	            System.out.println(startNode.getAttributes().getNamedItem("index").getNodeValue());
+	            System.out.println(startNode.getAttributes().getNamedItem("name").getNodeValue());
+	            System.out.println("############ StartNode End");
+	            System.out.println();
+	            
+	            // Get all already docked DockNodes and remove all already docked nodes
+	            final List<DockNode> dockNodeList = new ArrayList<DockNode>(dockStation.getDockNodes());
+	            for (DockNode dockNode : dockNodeList) {
+	            	dockNode.undock();
+	//            	System.out.println(dockNode.getContent().titleProperty().get());
+	            }
+	//            System.out.println();
+	//            System.out.println();
+	            
+	            handleNode(dockStation, dockNodeList, startNode.getParentNode());
+	            
+	         } catch (Exception e) {
+	            e.printStackTrace();
+	            return false;
+	         }
+	    	return true;
     }
     
     private static void handleNode(final DockStation station, final List<DockNode> dockNodeList, final org.w3c.dom.Node parentNode) {
-    	
-    	System.out.println(parentNode.getNodeName());
-    	
-    	switch (parentNode.getNodeName()) {
-    	case "DockSplitterContainer":
-    		handleSplitterContainer(station, dockNodeList, parentNode);
-    		break;
-    	case "DockTabberContainer":
-    		handleTabberContainer(station, dockNodeList, parentNode);
-    		break;
-    	case "DockSubStation":
-//    		handleSubStation(station, list.item(i));
-    		break;
-    	default:
-    		System.out.println("default");
-    		break;
-    	}
+	    	System.out.println("handleNode() - " + parentNode.getNodeName());
+	    	
+	    	switch (parentNode.getNodeName()) {
+	    	case "DockSplitterContainer":
+	    		handleSplitterContainer(station, dockNodeList, parentNode);
+	    		break;
+	    	case "DockTabberContainer":
+	    		handleTabberContainer(station, dockNodeList, parentNode);
+	    		break;
+	    	case "DockSubStation":
+	//    		handleSubStation(station, list.item(i));
+	    		break;
+	    	default:
+	    		System.out.println("default");
+	    		break;
+	    	}
     }
     
     private static void handleSplitterContainer(final DockStation station, final List<DockNode> dockNodeList, org.w3c.dom.Node parentNode) {    	
@@ -369,7 +367,6 @@ public class AnchorageSystem {
 	    		if (firstNode.getAttributes().getNamedItem("docked") != null) { // dock second node right or bottom
 	    			System.out.println("firstNode already docked");
 	
-	    			// TODO: Check if other docknode is dockable or has to be handled
 	    			if (secondDockNode != null) {
 		    			if (orientation.equals("HORIZONTAL")) {
 		    				secondDockNode.dock(station, DockPosition.RIGHT, dividerPosition);
@@ -382,7 +379,6 @@ public class AnchorageSystem {
 	    		} else if (secondNode.getAttributes().getNamedItem("docked") != null) {
 	    			System.out.println("secondNode already docked");
 	    			
-	    			// TODO: Check if other docknode is dockable or has to be handled
 	    			if (firstDockNode != null) {
 		    			if (orientation.equals("HORIZONTAL")) {
 		    				firstDockNode.dock(station, DockPosition.LEFT, dividerPosition);
@@ -403,8 +399,6 @@ public class AnchorageSystem {
     private static void handleTabberContainer(final DockStation station, final List<DockNode> dockNodeList, org.w3c.dom.Node parentNode) {
         final List<org.w3c.dom.Node> childNodes = getChildElements(parentNode.getChildNodes());
         
-        System.out.println("handleTabberContainer()");
-        
         // Return if there are not two nodes.
         if (childNodes.size() < 1) {
         		return;
@@ -413,7 +407,6 @@ public class AnchorageSystem {
         List <DockNode> filteredDockNodeList = new ArrayList<>();
         for (org.w3c.dom.Node childNode : childNodes) {
         		if (!childNode.getNodeName().equals("DockNode")) {
-        			System.out.println("handleTabberContainer() if");
         			return; // Something is wrong, return.
         		}
         		for (DockNode node : dockNodeList) {
@@ -422,15 +415,45 @@ public class AnchorageSystem {
         			}
         		}
         }
-        
-        System.out.println("handleTabberContainer() 2");
-        
-        // TODO: Check to which side is has to be aligned, get Parent, find out orientation and divider position and if tabber is first or second child.
-        filteredDockNodeList.get(filteredDockNodeList.size() - 1).dock(station, DockPosition.BOTTOM);
-        for (int i = filteredDockNodeList.size() - 2; i > -1; i--) {
-        		filteredDockNodeList.get(i).dock(filteredDockNodeList.get(filteredDockNodeList.size() - 1), DockPosition.CENTER);;
-        }
 
+        DockPosition dockPosition = DockPosition.CENTER;
+        double dividerPosition = 0.5;
+        
+        if (parentNode.getParentNode().getNodeName().equals("DockSplitterContainer")) {
+	        dividerPosition = Double.parseDouble(parentNode.getParentNode().getAttributes().getNamedItem("dividerPositions").getNodeValue());
+	    		final String orientation = parentNode.getParentNode().getAttributes().getNamedItem("orientation").getNodeValue();	    		
+	        
+	        final List<org.w3c.dom.Node> parentNodes = getChildElements(parentNode.getParentNode().getChildNodes());
+	        int childnumber = 0;
+	        
+	        for (int i = 0; i < parentNodes.size(); i++) {
+	        		if (parentNodes.get(i).getNodeName().equals("DockTabberContainer") && parentNodes.get(i).getAttributes().getNamedItem("docked") == null) {
+	        			childnumber = i;
+	        		}
+	        }
+	        
+	        if (orientation.equals("HORIZONTAL")) {
+	        		if (childnumber == 0) {
+	        			dockPosition = DockPosition.LEFT;
+		        } else {
+		        		dockPosition = DockPosition.RIGHT;
+		        }
+	    		} else {
+	    			if (childnumber == 0) {
+	        			dockPosition = DockPosition.TOP;
+		        } else {
+		        		dockPosition = DockPosition.BOTTOM;
+		        }
+	    		}	        
+        }
+        
+        System.out.println("dividerPosition: " + dividerPosition);
+		System.out.println("dockPosition: " + dockPosition.name());
+        
+        filteredDockNodeList.get(filteredDockNodeList.size() - 1).dock(station, dockPosition);
+        for (int i = filteredDockNodeList.size() - 2; i > -1; i--) {
+        		filteredDockNodeList.get(i).dock(filteredDockNodeList.get(filteredDockNodeList.size() - 1), DockPosition.CENTER);
+        }
     }
     
     private static void handleSubStation(DockStation station, org.w3c.dom.Node node) {
@@ -438,13 +461,13 @@ public class AnchorageSystem {
     }
     
     private static List<org.w3c.dom.Node> getChildElements(final NodeList list) {
-    	List<org.w3c.dom.Node> returnList = new ArrayList<>();
-    	for (int i = 0; i < list.getLength(); i++) {
-    		if (list.item(i).getNodeName().equals("#text")) {
-    			continue;
-    		}
-    		returnList.add(list.item(i));
-    	}
-    	return returnList;
+	    	List<org.w3c.dom.Node> returnList = new ArrayList<>();
+	    	for (int i = 0; i < list.getLength(); i++) {
+	    		if (list.item(i).getNodeName().equals("#text")) {
+	    			continue;
+	    		}
+	    		returnList.add(list.item(i));
+	    	}
+	    	return returnList;
     }
 }
