@@ -23,15 +23,22 @@
  */
 package com.anchorage.demo;
 
+import com.anchorage.docks.containers.common.AnchorageSettings;
 import com.anchorage.docks.node.DockNode;
 import com.anchorage.docks.stations.DockStation;
 import com.anchorage.docks.stations.DockSubStation;
+import com.anchorage.system.AnchorageLayout;
 import com.anchorage.system.AnchorageSystem;
 import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.stage.Stage;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.control.Button;
+import javafx.scene.layout.HBox;
 
 import java.util.Random;
 
@@ -44,11 +51,34 @@ public class AnchorFX_layoutTest extends Application {
     @Override
     public void start(Stage primaryStage) {
 
-        //AnchorageSettings.setDockingPositionPreview(false);
-        
-        DockStation station = AnchorageSystem.createStation();
+        AnchorageSettings.setDockingPositionPreview(true);
 
-        Scene scene = new Scene(station,  1024, 768);
+        DockStation station = AnchorageSystem.createStation();
+        
+        BorderPane bPane = new BorderPane();
+        bPane.setCenter(station);
+        
+        Button saveBtn = new Button("Save");
+        Button loadBtn = new Button("Load");
+        
+        HBox hbox = new HBox(saveBtn, loadBtn);
+        bPane.setTop(hbox);
+        
+        saveBtn.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				AnchorageLayout.saveLayout(station, "/Users/markus/Downloads/layout/layout.xml");
+			}
+		});
+        
+        loadBtn.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				AnchorageLayout.restoreLayout(station, "/Users/markus/Downloads/layout/layout.xml");
+			}
+		});
+
+        Scene scene = new Scene(bPane,  1024, 768);
 
         DockNode node1 = AnchorageSystem.createDock("Not floatable", generateRandomTree());
         node1.dock(station, DockNode.DockPosition.LEFT);
@@ -83,18 +113,25 @@ public class AnchorFX_layoutTest extends Application {
 //        subStation.dock(station, DockNode.DockPosition.BOTTOM);
         
         DockNode node6 = AnchorageSystem.createDock("Node6", generateRandomTree());
-        node6.dock(station, DockNode.DockPosition.BOTTOM);
+        node6.dock(station, DockNode.DockPosition.RIGHT, 0.23);
+        
+        DockNode node7 = AnchorageSystem.createDock("Node7", generateRandomTree());
+        node7.dock(node6, DockNode.DockPosition.BOTTOM, 0.35);
+        
+        DockNode node8 = AnchorageSystem.createDock("Node8", generateRandomTree());
+        node8.dock(node6, DockNode.DockPosition.CENTER);
+        
+        DockNode node9 = AnchorageSystem.createDock("Node9", generateRandomTree());
+        node9.dock(station, DockNode.DockPosition.BOTTOM);
+        
+        DockNode node10 = AnchorageSystem.createDock("Node10", generateRandomTree());
+        node10.dock(node9, DockNode.DockPosition.TOP);
 
         primaryStage.setTitle("AnchorFX ");
         primaryStage.setScene(scene);
         primaryStage.show();
         
         AnchorageSystem.installDefaultStyle();
-        
-        AnchorageSystem.saveLayout(station, "/Users/markus/Downloads/layout/layout.xml");
-        AnchorageSystem.restoreLayout(station, "/Users/markus/Downloads/layout/layout.xml");
-//        AnchorageSystem.saveLayout(station, "C:\\Users\\mt14567\\Downloads\\layout\\layout.xml");
-//        AnchorageSystem.restoreLayout(station, "C:\\Users\\mt14567\\Downloads\\layout\\layout.xml");
     }
 
     private TreeView<String> generateRandomTree() {
