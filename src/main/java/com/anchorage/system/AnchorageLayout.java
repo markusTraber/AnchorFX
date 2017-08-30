@@ -16,6 +16,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import com.anchorage.docks.containers.common.DockCommons;
 import com.anchorage.docks.containers.subcontainers.DockSplitterContainer;
 import com.anchorage.docks.containers.subcontainers.DockTabberContainer;
 import com.anchorage.docks.node.DockNode;
@@ -26,6 +27,7 @@ import com.anchorage.docks.stations.DockSubStation;
 
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.geometry.Orientation;
 
 public class AnchorageLayout {
 	
@@ -38,10 +40,8 @@ public class AnchorageLayout {
 	 * Saves layout of the DockStation. <br/>
 	 * <b>Warning:</b> Does not work with multiple instances of one UI class.
 	 * 
-	 * @param rootDockStation
-	 *            Root dock station
-	 * @param filePath
-	 *            file path where to save layout.
+	 * @param rootDockStation Root dock station
+	 * @param filePath file path where to save layout.
 	 * @return boolean if saving layout has been successful.
 	 */
 	public static boolean saveLayout(DockStation rootDockStation, final String filePath) {
@@ -80,14 +80,11 @@ public class AnchorageLayout {
 		return true;
 	}
 
-	private static void parseStationTree(final Parent parent, final Document doc, final Element element,
-			final int index) {
+	private static void parseStationTree(final Parent parent, final Document doc, final Element element, final int index) {
 		if (!parent.getChildrenUnmodifiable().isEmpty()) {
 			for (Node child : parent.getChildrenUnmodifiable()) {
 
-				final boolean allowedClasses = child instanceof DockSplitterContainer || child instanceof DockNode
-						|| child instanceof DockTabberContainer
-						|| /* child instanceof DockStation || */ child instanceof DockSubStation;
+				final boolean allowedClasses = child instanceof DockSplitterContainer || child instanceof DockNode || child instanceof DockTabberContainer || child instanceof DockSubStation;
 				Element childElement;
 
 				// Omit elements, that are not necessary.
@@ -122,8 +119,7 @@ public class AnchorageLayout {
 
 				// Append UI element or dig deeper
 				if (child instanceof DockUIPanel && !(parent instanceof DockSubStation)) {
-					Element uiElement = doc.createElement(((DockUIPanel) child).getNodeContent().getClass()
-							.getSimpleName().trim().replaceAll("/[^A-Za-z]/", ""));
+					Element uiElement = doc.createElement(((DockUIPanel) child).getNodeContent().getClass().getSimpleName().trim().replaceAll("/[^A-Za-z]/", ""));
 					childElement.appendChild(uiElement);
 				} else if (child instanceof Parent) {
 					final int newLevel = index + 1;
@@ -152,37 +148,21 @@ public class AnchorageLayout {
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 			Document doc = dBuilder.parse(inputFile);
 
-			NodeList list = doc.getElementsByTagName("DockNode");
-
-			// Return if no elements in station
-			if (list.getLength() == 0) {
-				return false;
-			}
-
-			org.w3c.dom.Node startNode = list.item(0);
-
-			for (int i = 1; i < list.getLength(); i++) {
-				int currentIndex = Integer.parseInt(startNode.getAttributes().getNamedItem("index").getNodeValue());
-				int newIndex = Integer.parseInt(list.item(i).getAttributes().getNamedItem("index").getNodeValue());
-
-				if (newIndex > currentIndex) {
-					startNode = list.item(i);
-				}
-			}
-			System.out.println("############ StartNode");
-			System.out.println(startNode.getNodeName());
-			System.out.println(startNode.getAttributes().getNamedItem("index").getNodeValue());
-			System.out.println(startNode.getAttributes().getNamedItem("name").getNodeValue());
-			System.out.println("############ StartNode End");
-			System.out.println();
-
 			// Get all already docked DockNodes and remove all already docked nodes
 			final List<DockNode> dockNodeList = new ArrayList<DockNode>(dockStation.getDockNodes());
 			for (DockNode dockNode : dockNodeList) {
 				dockNode.undock();
 			}
 
-			handleNode(dockStation, dockNodeList, startNode.getParentNode(), null, null);
+			List<org.w3c.dom.Node> firstChild = removeTextNodes(doc.getDocumentElement().getChildNodes());
+			if (firstChild.isEmpty()) {
+				return false; // no child elements
+			}
+			
+			org.w3c.dom.Node startNode = firstChild.get(0);
+			
+			Node stationNode = handleNode(startNode, dockNodeList);
+			dockStation.getChildren().add(stationNode);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
@@ -191,26 +171,56 @@ public class AnchorageLayout {
 	}
 
 	
-	private static void handleNode(final DockStation station, final List<DockNode> dockNodeList,	final org.w3c.dom.Node parentNode, DockPosition firstDockPosition, DockNode dockFirstToThis) {
-		System.out.println("handleNode() - " + parentNode.getNodeName());
-
-		switch (parentNode.getNodeName()) {
+	private static Node handleNode(final org.w3c.dom.Node node, final List<DockNode> dockNodeList) {
+		switch (node.getNodeName()) {
 		case "DockSplitterContainer":
-			
-			break;
+			return handleDockSplitterContainer(node, dockNodeList);
 		case "DockTabberContainer":
-
-			break;
+			return handleDockTabberContainer(node, dockNodeList);
 		case "DockSubStation":
-			
+			// TODO: Implement substation and floating.
 			break;
+		case "DockNode":
+			for (DockNode dockNode : dockNodeList) {
+				if (node.getAttributes().getNamedItem("name") != null && dockNode.getContent().titleProperty().getValue().equals(node.getAttributes().getNamedItem("name").getNodeValue())) {
+					return dockNode;
+				} 
+			}
 		default:
-			System.out.println("default");
 			break;
 		}
+		return null;
+	}
+	
+	private static Node handleDockSplitterContainer(final org.w3c.dom.Node node, final List<DockNode> dockNodeList) {
+		final double dividerPosition = Double.parseDouble(node.getAttributes().getNamedItem("dividerPositions").getNodeValue());
+		final List<org.w3c.dom.Node> childNodes = removeTextNodes(node.getChildNodes());
+		final Orientation orientation;
+		
+		if (node.getAttributes().getNamedItem("orientation").getNodeValue().equals("VERTICAL")) {
+			orientation = Orientation.VERTICAL;
+		} else {
+			orientation = Orientation.HORIZONTAL;
+		}
+
+		Node firstNode = handleNode(childNodes.get(0), dockNodeList);
+		Node secondNode = handleNode(childNodes.get(1), dockNodeList);;
+		
+		return DockCommons.createSplitter(firstNode, secondNode, orientation, dividerPosition);
+	}
+	
+	private static Node handleDockTabberContainer(final org.w3c.dom.Node node, final List<DockNode> dockNodeList) {
+		final List<org.w3c.dom.Node> childNodes = removeTextNodes(node.getChildNodes());
+		
+		List<Node> nodeList = new ArrayList<>();
+		for (int i = childNodes.size() - 1; i >= 0; i--) {
+			nodeList.add(handleNode(childNodes.get(i), dockNodeList));
+		}
+		
+		return DockCommons.createTabber(nodeList);
 	}
 
-	private static List<org.w3c.dom.Node> getChildElements(final NodeList list) {
+	private static List<org.w3c.dom.Node> removeTextNodes(final NodeList list) {
 		List<org.w3c.dom.Node> returnList = new ArrayList<>();
 		for (int i = 0; i < list.getLength(); i++) {
 			if (list.item(i).getNodeName().equals("#text")) {
