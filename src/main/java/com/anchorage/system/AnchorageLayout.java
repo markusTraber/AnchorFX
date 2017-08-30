@@ -197,6 +197,7 @@ public class AnchorageLayout {
 		return true;
 	}
 
+	
 	private static void handleNode(final DockStation station, final List<DockNode> dockNodeList,	final org.w3c.dom.Node parentNode, DockPosition firstDockPosition) {
 		System.out.println("handleNode() - " + parentNode.getNodeName());
 
@@ -270,10 +271,14 @@ public class AnchorageLayout {
 			System.out.println(firstNode.getAttributes().getNamedItem("docked"));
 			System.out.println(secondNode.getAttributes().getNamedItem("docked"));
 			
+			// TODO: dock to already docked node
+			
 			// has one element been docked already? then just execute docking of the other node.
 			if (firstNode.getAttributes().getNamedItem("docked") != null && secondNode.getAttributes().getNamedItem("docked") == null) { // dock second node right or bottom
 				System.out.println("firstNode already docked");
 
+				
+				
 				if (secondDockNode != null) {
 					if (orientation.equals("HORIZONTAL")) {
 						secondDockNode.dock(station, DockPosition.RIGHT, dividerPosition);
@@ -306,25 +311,49 @@ public class AnchorageLayout {
 					return;
 				}
 			} else if (firstNode.getAttributes().getNamedItem("docked") == null && secondNode.getAttributes().getNamedItem("docked") == null) {
-				System.out.println("both not docked");
+				// Both have not been docked, dig deeper
 				
-//				if (orientation.equals("HORIZONTAL")) {
-//					if (!firstNode.getNodeName().equals("DockNode")) {
-//						handleNode(station, dockNodeList, firstNode, DockPosition.LEFT);
-//					} else {
-//						handleNode(station, dockNodeList, secondNode, DockPosition.RIGHT);
-//					}
-//				} else {
-//					if (!firstNode.getNodeName().equals("DockNode")) {
-//						handleNode(station, dockNodeList, firstNode, DockPosition.TOP);
-//					} else {
-//						handleNode(station, dockNodeList, secondNode, DockPosition.BOTTOM);
-//					}
-//				}
+				System.out.println("both not docked");
+
+				// Find out, which one to handle first
+				org.w3c.dom.Node nodeToHandle;
 				if (!firstNode.getNodeName().equals("DockNode")) {
-					handleNode(station, dockNodeList, firstNode, firstDockPosition);
+					nodeToHandle = firstNode;
 				} else {
-					handleNode(station, dockNodeList, secondNode, firstDockPosition);
+					nodeToHandle = secondNode;
+				}
+				
+				if (parentNode.getParentNode().getNodeName().equals("DockSplitterContainer")) {
+					final String previousOrientation = parentNode.getParentNode().getAttributes().getNamedItem("orientation").getNodeValue();
+					
+					// TODO: getNextSibling not working: #text
+					boolean hasNextSibling = false;
+					org.w3c.dom.Node nextSibling = parentNode.getNextSibling();
+					do {
+						if (!nextSibling.getNodeName().equals("#text")) {
+							hasNextSibling = true;
+							break;
+						}
+						nextSibling = nextSibling.getNextSibling();
+					} while (nextSibling != null);
+					System.out.println("nextSibling" + hasNextSibling);
+					
+					if (previousOrientation.equals("HORIZONTAL")) {
+						if (hasNextSibling) {
+							handleNode(station, dockNodeList, firstNode, DockPosition.LEFT);
+						} else {
+							handleNode(station, dockNodeList, firstNode, DockPosition.RIGHT);
+						}
+						
+					} else {
+						if (hasNextSibling) {
+							handleNode(station, dockNodeList, firstNode, DockPosition.TOP);
+						} else {
+							handleNode(station, dockNodeList, firstNode, DockPosition.BOTTOM);
+						}
+					}
+				} else {
+					handleNode(station, dockNodeList, firstNode, firstDockPosition);
 				}
 				
 				return;				
@@ -364,32 +393,6 @@ public class AnchorageLayout {
 
 		if (parentNode.getParentNode().getNodeName().equals("DockSplitterContainer")) {
 			dividerPosition = Double.parseDouble(parentNode.getParentNode().getAttributes().getNamedItem("dividerPositions").getNodeValue());
-//			final String orientation = parentNode.getParentNode().getAttributes().getNamedItem("orientation")
-//					.getNodeValue();
-//
-//			final List<org.w3c.dom.Node> parentNodes = getChildElements(parentNode.getParentNode().getChildNodes());
-//			int childnumber = 0;
-//
-//			for (int i = 0; i < parentNodes.size(); i++) {
-//				if (parentNodes.get(i).getNodeName().equals("DockTabberContainer")
-//						&& parentNodes.get(i).getAttributes().getNamedItem("docked") == null) {
-//					childnumber = i;
-//				}
-//			}
-//
-//			if (orientation.equals("HORIZONTAL")) {
-//				if (childnumber == 0) {
-//					dockPosition = DockPosition.LEFT;
-//				} else {
-//					dockPosition = DockPosition.RIGHT;
-//				}
-//			} else {
-//				if (childnumber == 0) {
-//					dockPosition = DockPosition.TOP;
-//				} else {
-//					dockPosition = DockPosition.BOTTOM;
-//				}
-//			}
 		}
 
 		System.out.println("dividerPosition: " + dividerPosition);
