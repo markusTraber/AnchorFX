@@ -70,8 +70,6 @@ public class AnchorageLayout {
 			doc.appendChild(mainRootElement);
 			parseStationTree(rootNode, doc, mainRootElement, 0);
 
-			System.out.println("XML DOM created successfully");
-
 			// DOM XML output
 			Transformer transformer = TransformerFactory.newInstance().newTransformer();
 			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
@@ -155,7 +153,7 @@ public class AnchorageLayout {
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 			Document doc = dBuilder.parse(inputFile);
-
+			
 			// Get all already docked DockNodes and remove all already docked nodes
 			final List<DockNode> dockNodeList = getAndUndockAllDocks(dockStation.getDockNodes());
 			
@@ -167,12 +165,10 @@ public class AnchorageLayout {
 			org.w3c.dom.Node startNode = firstChild.get(0);
 			
 			Node outerMostNode = handleNode(startNode, dockNodeList, dockStation);
-			
-			// Set parent containers
-			setAllParentContainers(outerMostNode);
-			((DockContainer) outerMostNode).setParentContainer(dockStation);
-			
 			dockStation.getChildren().add(outerMostNode);
+			
+			// Set parent containers (important for docking to function
+			setAllParentContainers(dockStation);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
@@ -185,12 +181,12 @@ public class AnchorageLayout {
         final List<DockNode> returnList = new ArrayList<>(dockNodeList);
         
         for (DockNode dockNode : list) {
-        	dockNode.undock();
-        	
-        	if (dockNode instanceof DockSubStation) {
-        	    DockSubStation subStation = (DockSubStation) dockNode;
-        	    returnList.addAll(getAndUndockAllDocks(subStation.getSubStation().getDockNodes()));
-        	}
+	        	dockNode.undock();
+	        	
+	        	if (dockNode instanceof DockSubStation) {
+	        	    DockSubStation subStation = (DockSubStation) dockNode;
+	        	    returnList.addAll(getAndUndockAllDocks(subStation.getSubStation().getDockNodes()));
+	        	}
         }
         return returnList;
     }
@@ -207,6 +203,8 @@ public class AnchorageLayout {
 	            for (Tab tab : ((DockTabberContainer) dockContainer).getTabs()) {
 	                list.add(tab.getContent());
 	            }
+	        } else if (dockContainer instanceof DockStation) {
+	        		list.addAll(((DockStation) dockContainer).getChildren());
 	        }
 	        
 	        for (Node childNode : list) {
@@ -215,7 +213,7 @@ public class AnchorageLayout {
 	                subStation.setParentContainer(dockContainer);
 	                
 	                if (!subStation.getSubStation().getChildren().isEmpty()) {
-	                    setAllParentContainers(subStation.getSubStation().getChildren().get(0));
+	                    setAllParentContainers(subStation.getSubStation());
 	                }
 	            } else if (childNode instanceof DockNode) {
 	                // Set DockNode parent container
@@ -264,6 +262,7 @@ public class AnchorageLayout {
         final String name = node.getAttributes().getNamedItem("name").getNodeValue();
         DockSubStation subStation = AnchorageSystem.createSubStation(dockStation, name);
         subStation.stationProperty().set(dockStation);
+        dockStation.add(subStation);
         
         if (childNodes.isEmpty()) {
             return subStation;
@@ -277,11 +276,11 @@ public class AnchorageLayout {
 
     private static Node handleDockNode(final org.w3c.dom.Node node, final List<DockNode> dockNodeList, final DockStation dockStation) {
         for (DockNode dockNode : dockNodeList) {
-        	if (node.getAttributes().getNamedItem("name") != null && dockNode.getContent().titleProperty().getValue().equals(node.getAttributes().getNamedItem("name").getNodeValue())) {
-        		dockStation.add(dockNode);
-        		dockNode.stationProperty().set(dockStation);
-        	    return dockNode;
-        	} 
+	        	if (node.getAttributes().getNamedItem("name") != null && dockNode.getContent().titleProperty().getValue().equals(node.getAttributes().getNamedItem("name").getNodeValue())) {
+	        		dockStation.add(dockNode);
+	        		dockNode.stationProperty().set(dockStation);
+	        	    return dockNode;
+	        	} 
         }
         return null;
     }
@@ -296,10 +295,10 @@ public class AnchorageLayout {
 		} else {
 			orientation = Orientation.HORIZONTAL;
 		}
-
+		
 		Node firstNode = handleNode(childNodes.get(0), dockNodeList, dockStation);
 		Node secondNode = handleNode(childNodes.get(1), dockNodeList, dockStation);
-		
+				
 		return DockCommons.createSplitter(firstNode, secondNode, orientation, dividerPosition);
 	}
 	
