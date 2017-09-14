@@ -67,14 +67,14 @@ public class AnchorFX_layoutTest extends Application {
         saveBtn.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				AnchorageLayout.saveLayout(station, "/Users/markus/Downloads/layout/layout.xml");
+//				AnchorageLayout.saveLayout(station, "/Users/markus/Downloads/layout/layout.xml");
 			}
 		});
         
         loadBtn.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				AnchorageLayout.restoreLayout(station, "/Users/markus/Downloads/layout/layout.xml");
+//				AnchorageLayout.restoreLayout(station, "/Users/markus/Downloads/layout/layout.xml");
 			}
 		});
 
@@ -99,8 +99,8 @@ public class AnchorFX_layoutTest extends Application {
         DockNode node5 = AnchorageSystem.createDock("Node5", generateRandomTree());
         node5.dock(node4, DockNode.DockPosition.CENTER);
 
-        // SubStation
-//        DockSubStation subStation = AnchorageSystem.createSubStation(station, "SubStation");
+//        // SubStation
+//        DockSubStation subStation = AnchorageSystem.createSubStation(station, "SubStation 1");
 //        
 //        DockNode dockSubNode1 = AnchorageSystem.createDock("dockSubNode1", generateRandomTree());
 //        DockNode dockSubNode2 = AnchorageSystem.createDock("dockSubNode2", generateRandomTree());

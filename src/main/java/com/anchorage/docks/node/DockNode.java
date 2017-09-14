@@ -229,6 +229,10 @@ public class DockNode extends StackPane implements DockContainableComponent {
   public void setIcon(Image icon) {
     content.setIcon(icon);
   }
+  
+  public void setIcon(Node icon) {
+      content.setIcon(icon);
+  }
 
   public void restore() {
     if (draggingProperty.get()) {

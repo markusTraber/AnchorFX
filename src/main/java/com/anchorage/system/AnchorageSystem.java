@@ -23,34 +23,16 @@
  */
 package com.anchorage.system;
 
-import java.io.File;
-import java.nio.file.SecureDirectoryStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
-import com.anchorage.docks.containers.subcontainers.DockSplitterContainer;
-import com.anchorage.docks.containers.subcontainers.DockTabberContainer;
 import com.anchorage.docks.node.DockNode;
-import com.anchorage.docks.node.DockNode.DockPosition;
 import com.anchorage.docks.node.ui.DockUIPanel;
 import com.anchorage.docks.stations.DockStation;
 import com.anchorage.docks.stations.DockSubStation;
 import com.sun.javafx.css.StyleManager;
 
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.image.Image;
 
 /**
@@ -98,6 +80,12 @@ public class AnchorageSystem {
 		DockNode container = new DockNode(panel);
 		return container;
 	}
+	
+	public static DockNode createDock(String title, Node content, Node icon) {
+        DockUIPanel panel = new DockUIPanel(title, content, false, icon);
+        DockNode container = new DockNode(panel);
+        return container;
+    }
 
 	public static void installDefaultStyle() {
 		StyleManager.getInstance().addUserAgentStylesheet("AnchorFX.css");

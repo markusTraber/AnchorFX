@@ -18,20 +18,18 @@
  */
 package com.anchorage.docks.node.ui;
 
+import java.util.Objects;
+
 import com.anchorage.docks.containers.NodeDraggingPreview;
 import com.anchorage.docks.node.DockNode;
-import com.anchorage.system.AnchorageSystem;
-import java.util.Objects;
+
 import javafx.beans.property.StringProperty;
-import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.CacheHint;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 
@@ -50,17 +48,26 @@ public final class DockUIPanel extends Pane {
   private DockNode node;
   private Point2D deltaDragging;
   private boolean substationType;
-  private ImageView iconView;
+  private Node iconView;
   private NodeDraggingPreview nodePreview;
 
-  public DockUIPanel(String title, Node _nodeContent, boolean _substationType, Image imageIcon) {
-    getStylesheets().add("AnchorFX.css");
-    substationType = _substationType;
-    Objects.requireNonNull(_nodeContent);
-    Objects.requireNonNull(title);
-    nodeContent = _nodeContent;
-    buildNode(title, imageIcon);
-//    installDragEventManager(barPanel);
+  
+  public DockUIPanel(String title, Node _nodeContent, boolean _substationType, Image icon) {
+      this(title, _nodeContent, _substationType, new ImageView(icon));
+  }
+  
+  public DockUIPanel(String title, Node _nodeContent, boolean _substationType, Node icon) {
+      if (icon instanceof ImageView) {
+          alignImageView((ImageView) icon);
+      }
+
+      getStylesheets().add("AnchorFX.css");
+      substationType = _substationType;
+      Objects.requireNonNull(_nodeContent);
+      Objects.requireNonNull(title);
+      nodeContent = _nodeContent;
+      buildNode(title, icon);
+      //    installDragEventManager(barPanel);
   }
 
   public Node getNodeForDraggingManagement() {
@@ -68,8 +75,29 @@ public final class DockUIPanel extends Pane {
   }
 
   public void setIcon(Image icon) {
-    Objects.requireNonNull(icon);
-    iconView.setImage(icon);
+      ImageView imgView = new ImageView(icon);
+      alignImageView(imgView);
+      setIcon(imgView);
+  }
+  
+  public void setIcon(Node icon) {
+      Objects.requireNonNull(icon);
+      if (barPanel.getChildren().contains(iconView)) {
+          barPanel.getChildren().remove(iconView);
+      }
+      if (icon instanceof ImageView) {
+          alignImageView((ImageView) icon);
+      }
+      iconView = icon;
+      iconView.relocate(5, (BAR_HEIGHT - iconView.getLayoutBounds().getHeight()) / 2 + 1);
+      barPanel.getChildren().add(0, iconView);
+    }
+  
+  private static void alignImageView(final ImageView imgView) {
+      imgView.setFitWidth(15);
+      imgView.setFitHeight(15);
+      imgView.setPreserveRatio(false);
+      imgView.setSmooth(true);
   }
 
   private void makeCommands() {
@@ -153,8 +181,8 @@ public final class DockUIPanel extends Pane {
 //    }
 //  }
 
-  private void buildNode(String title, Image iconImage) {
-    Objects.requireNonNull(iconImage);
+  private void buildNode(String title, Node icon) {
+    Objects.requireNonNull(icon);
     Objects.requireNonNull(title);
     barPanel = new Pane();
     String titleBarStyle = (!substationType) ? "docknode-title-bar" : "substation-title-bar";
@@ -164,12 +192,8 @@ public final class DockUIPanel extends Pane {
     barPanel.prefWidthProperty().bind(widthProperty());
     titleLabel = new Label(title);
     String titleTextStyle = (!substationType) ? "docknode-title-text" : "substation-title-text";
-    iconView = new ImageView(iconImage);
-    iconView.setFitWidth(15);
-    iconView.setFitHeight(15);
-    iconView.setPreserveRatio(false);
-    iconView.setSmooth(true);
-    iconView.relocate(1, (BAR_HEIGHT - iconView.getFitHeight()) / 2);
+    iconView = icon; 
+    iconView.relocate(5, (BAR_HEIGHT - iconView.getLayoutBounds().getHeight()) / 2 + 1);
     titleLabel.getStyleClass().add(titleTextStyle);
     barPanel.getChildren().addAll(iconView, titleLabel);
     titleLabel.relocate(25, 5);
