@@ -23,4 +23,10 @@
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 	</properties>
+
+	<scm>
+		<connection>scm:git:git://github.com/markusTraber/AnchorFX.git</connection>
+		<developerConnection>scm:git:ssh://github.com/markusTraber/AnchorFX.git</developerConnection>
+		<url>https://github.com/markusTraber/AnchorFX/tree/save_layout</url>
+	</scm>
 </project>
