@@ -19,6 +19,9 @@
 
 package com.anchorage.docks.containers.common;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.anchorage.docks.containers.interfaces.DockContainableComponent;
 import com.anchorage.docks.containers.subcontainers.DockSplitterContainer;
 import com.anchorage.docks.containers.subcontainers.DockTabberContainer;
@@ -27,10 +30,6 @@ import com.anchorage.docks.node.DockNode.DockPosition;
 
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
-import javafx.scene.control.Tab;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *

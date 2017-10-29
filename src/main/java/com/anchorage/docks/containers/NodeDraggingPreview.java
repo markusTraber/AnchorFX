@@ -21,9 +21,9 @@ package com.anchorage.docks.containers;
 import static com.anchorage.docks.containers.common.AnchorageSettings.FLOATING_NODE_DROPSHADOW_RADIUS;
 
 import com.anchorage.docks.node.DockNode;
+
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.SnapshotParameters;
 import javafx.scene.effect.BlurType;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.ImageView;

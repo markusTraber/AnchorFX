@@ -1,12 +1,11 @@
 package com.anchorage.system;
 
+import static com.anchorage.docks.containers.common.AnchorageSettings.FLOATING_NODE_DROPSHADOW_RADIUS;
+
 import java.io.File;
-import java.lang.Character.Subset;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.sound.midi.Synthesizer;
-import javax.swing.plaf.synth.SynthSpinnerUI;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -19,7 +18,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import com.anchorage.docks.containers.SingleDockContainer;
+import com.anchorage.docks.containers.StageFloatable;
 import com.anchorage.docks.containers.common.DockCommons;
 import com.anchorage.docks.containers.interfaces.DockContainer;
 import com.anchorage.docks.containers.subcontainers.DockSplitterContainer;
@@ -28,11 +27,13 @@ import com.anchorage.docks.node.DockNode;
 import com.anchorage.docks.node.ui.DockUIPanel;
 import com.anchorage.docks.stations.DockStation;
 import com.anchorage.docks.stations.DockSubStation;
+import com.sun.javafx.robot.impl.FXRobotHelper;
 
+import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.geometry.Orientation;
 import javafx.scene.control.Tab;
+import javafx.stage.Stage;
 
 /**
  * @author Markus Traber
@@ -47,7 +48,6 @@ public class AnchorageLayout {
 
 	/**
 	 * Saves layout of the DockStation. <br/>
-	 * <b>Warning:</b> Does not work with multiple instances of one UI class.
 	 * 
 	 * @param rootDockStation Root dock station
 	 * @param filePath file path where to save layout.
@@ -68,7 +68,12 @@ public class AnchorageLayout {
 			Document doc = icBuilder.newDocument();
 			Element mainRootElement = doc.createElement(rootNode.getClass().getSimpleName().trim());
 			doc.appendChild(mainRootElement);
-			parseStationTree(rootNode, doc, mainRootElement, 0);
+			
+			// DockNodes, docked to station
+			parseStationTree(rootNode, doc, mainRootElement);
+			
+			// floating DockNodes
+			parseFloatingNodes(doc, mainRootElement);
 
 			// DOM XML output
 			Transformer transformer = TransformerFactory.newInstance().newTransformer();
@@ -84,10 +89,11 @@ public class AnchorageLayout {
 			e.printStackTrace();
 			return false;
 		}
+		
 		return true;
 	}
 
-	private static void parseStationTree(final Parent parent, final Document doc, final Element element, final int index) {
+	private static void parseStationTree(final Parent parent, final Document doc, final Element element) {
 		if (!parent.getChildrenUnmodifiable().isEmpty()) {
 			for (Node child : parent.getChildrenUnmodifiable()) {
 
@@ -126,10 +132,35 @@ public class AnchorageLayout {
 					Element uiElement = doc.createElement(((DockUIPanel) child).getNodeContent().getClass().getSimpleName().trim().replaceAll("/[^A-Za-z]/", ""));
 					childElement.appendChild(uiElement);
 				} else if (child instanceof Parent) {
-					final int newLevel = index + 1;
-					parseStationTree((Parent) child, doc, childElement, newLevel);
+					parseStationTree((Parent) child, doc, childElement);
 				}
 
+			}
+		}
+	}
+	
+	private static void parseFloatingNodes(Document doc, Element mainRootElement) {
+		Element floatingElement = doc.createElement("floating");
+		mainRootElement.appendChild(floatingElement);
+		for (Stage stage : FXRobotHelper.getStages()) {
+			if (stage instanceof StageFloatable) {
+				StageFloatable stageFloatable = (StageFloatable) stage;
+				
+				// create child element
+				final String elementName = stageFloatable.getDockNode().getClass().getSimpleName().trim().replaceAll("/[^A-Za-z]/", "");
+				Element childElement = doc.createElement(elementName);
+				
+				// name
+				DockUIPanel dockUIPanel = stageFloatable.getDockNode().getContent();
+				childElement.setAttribute("name", dockUIPanel.titleProperty().get());
+				
+				// position and size
+				childElement.setAttribute("position-x", Double.toString(stageFloatable.getX() + FLOATING_NODE_DROPSHADOW_RADIUS));
+				childElement.setAttribute("position-y", Double.toString(stageFloatable.getY() + FLOATING_NODE_DROPSHADOW_RADIUS));
+				childElement.setAttribute("width", Double.toString(stageFloatable.getScene().getWidth()));
+				childElement.setAttribute("height", Double.toString(stageFloatable.getScene().getHeight()));
+
+				floatingElement.appendChild(childElement);
 			}
 		}
 	}
@@ -167,7 +198,13 @@ public class AnchorageLayout {
 			Node outerMostNode = handleNode(startNode, dockNodeList, dockStation);
 			dockStation.getChildren().add(outerMostNode);
 			
-			// Set parent containers (important for docking to function
+			// floating nodes
+			if (firstChild.size() > 1) {
+				org.w3c.dom.Node floating = firstChild.get(1);
+				handleFloatingNodes(floating, dockNodeList, dockStation);
+			}
+			
+			// Set parent containers (important for docking to function)
 			setAllParentContainers(dockStation);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -230,15 +267,31 @@ public class AnchorageLayout {
 	}
 	
 	private static List<org.w3c.dom.Node> removeTextNodes(final NodeList list) {
-    	List<org.w3c.dom.Node> returnList = new ArrayList<>();
-    	for (int i = 0; i < list.getLength(); i++) {
-    		if (list.item(i).getNodeName().equals("#text")) {
-    			continue;
-    		}
-    		returnList.add(list.item(i));
-    	}
-    	return returnList;
+	    	List<org.w3c.dom.Node> returnList = new ArrayList<>();
+	    	for (int i = 0; i < list.getLength(); i++) {
+	    		if (list.item(i).getNodeName().equals("#text")) {
+	    			continue;
+	    		}
+	    		returnList.add(list.item(i));
+	    	}
+	    	return returnList;
     }
+	
+	private static void handleFloatingNodes(final org.w3c.dom.Node floating, final List<DockNode> dockNodeList, final DockStation dockStation) {
+		List<org.w3c.dom.Node> floatingList = removeTextNodes(floating.getChildNodes());
+		for (org.w3c.dom.Node node : floatingList) {	
+			final double posX = Double.parseDouble(node.getAttributes().getNamedItem("position-x").getNodeValue());
+			final double posY = Double.parseDouble(node.getAttributes().getNamedItem("position-y").getNodeValue());
+			final double width = Double.parseDouble(node.getAttributes().getNamedItem("width").getNodeValue());
+			final double height = Double.parseDouble(node.getAttributes().getNamedItem("height").getNodeValue());
+			
+			for (DockNode dockNode : dockNodeList) {
+		        	if (node.getAttributes().getNamedItem("name") != null && dockNode.getContent().titleProperty().getValue().equals(node.getAttributes().getNamedItem("name").getNodeValue())) {
+		        		dockNode.dockAsFloating(dockStation.getStationWindow(), dockStation, posX, posY, width, height);
+		        	} 
+	        }
+		}
+	}
 
     private static Node handleNode(final org.w3c.dom.Node node, final List<DockNode> dockNodeList, final DockStation dockStation) {
 		switch (node.getNodeName()) {
@@ -251,7 +304,6 @@ public class AnchorageLayout {
 		case "DockNode": 
 		    return handleDockNode(node, dockNodeList, dockStation);
 		default:
-		    // TODO: floating!
 			break;
 		}
 		return null;

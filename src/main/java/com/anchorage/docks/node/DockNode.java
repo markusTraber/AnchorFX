@@ -155,6 +155,7 @@ public class DockNode extends StackPane implements DockContainableComponent {
             nodePreview.setX(event.getScreenX() - dragWindowOffset.getX());
             nodePreview.setY(event.getScreenY() - dragWindowOffset.getY());
           }
+          // TODO: Look here
           stationProperty().get().searchTargetNode(event.getScreenX(), event.getScreenY());
           AnchorageSystem.searchTargetNode(event.getScreenX(), event.getScreenY());
         }
@@ -336,8 +337,7 @@ public class DockNode extends StackPane implements DockContainableComponent {
     this.container.set(container);
   }
 
-  public void dockAsFloating(Window owner, DockStation station, double x, double y, double width,
-      double height) {
+  public void dockAsFloating(Window owner, DockStation station, double x, double y, double width, double height) {
     if (stationProperty().get() != null) {
       ensureVisibility();
       return;
