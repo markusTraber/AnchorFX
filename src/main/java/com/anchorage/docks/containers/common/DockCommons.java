@@ -74,19 +74,7 @@ public class DockCommons {
         return new DockSplitterContainer();
     }
 
-    // TODO: check if it works as expected
     public static DockTabberContainer createTabber(Node existNode, Node newNode, DockNode.DockPosition position) {
-//        if (existNode instanceof DockNode && newNode instanceof DockNode) {
-//            DockNode existDockNode = (DockNode) existNode;
-//            DockNode newDockNode = (DockNode) newNode;
-//            DockTabberContainer tabber = new DockTabberContainer();
-//			tabber.addAsTab(existDockNode);
-//			tabber.addAsTab(newDockNode);
-//            tabber.getStyleClass().add("docknode-tab-pane");
-//            newDockNode.ensureVisibility();
-//            return tabber;
-//        }
-//        return null;
     		List<Node> nodes = new ArrayList<>();
     		nodes.add(existNode);
     		nodes.add(newNode);

@@ -155,7 +155,6 @@ public class DockNode extends StackPane implements DockContainableComponent {
             nodePreview.setX(event.getScreenX() - dragWindowOffset.getX());
             nodePreview.setY(event.getScreenY() - dragWindowOffset.getY());
           }
-          // TODO: Look here
           stationProperty().get().searchTargetNode(event.getScreenX(), event.getScreenY());
           AnchorageSystem.searchTargetNode(event.getScreenX(), event.getScreenY());
         }

@@ -169,8 +169,6 @@ public class AnchorageLayout {
 	// Restore Layout
 	////////////////////////////
 	
-	// TODO: Floating docknodes + DockSubStation support
-
 	/**
 	 * Restores layout of already docked nodes.
 	 * 
