@@ -1,3 +1,7 @@
+## This is a fork of AnchorFX (https://github.com/alexbodogit/AnchorFX)
+### Purpose: Implementing a functionality to save the layout. 
+Known issues: Saving layout of floating nodes not working correctly
+
 ![Anchorfx logo](/src/main/resources/anchorfx.png)
 
 ### Docking framework for JavaFX platform
