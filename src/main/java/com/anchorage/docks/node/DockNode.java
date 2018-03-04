@@ -229,6 +229,10 @@ public class DockNode extends StackPane implements DockContainableComponent {
   public void setIcon(Image icon) {
     content.setIcon(icon);
   }
+  
+  public void setIcon(Node icon) {
+      content.setIcon(icon);
+  }
 
   public void restore() {
     if (draggingProperty.get()) {
@@ -332,8 +336,7 @@ public class DockNode extends StackPane implements DockContainableComponent {
     this.container.set(container);
   }
 
-  public void dockAsFloating(Window owner, DockStation station, double x, double y, double width,
-      double height) {
+  public void dockAsFloating(Window owner, DockStation station, double x, double y, double width, double height) {
     if (stationProperty().get() != null) {
       ensureVisibility();
       return;

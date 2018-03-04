@@ -23,7 +23,7 @@ import com.anchorage.docks.containers.common.DockCommons;
 import com.anchorage.docks.containers.interfaces.DockContainableComponent;
 import com.anchorage.docks.containers.interfaces.DockContainer;
 import com.anchorage.docks.node.DockNode;
-import com.anchorage.docks.stations.DockStation;
+
 import javafx.scene.Node;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.BorderPane;

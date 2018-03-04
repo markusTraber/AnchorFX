@@ -45,7 +45,7 @@ public final class DockTabberContainer extends TabPane implements DockContainer 
     newTab.setContent(node);
     newTab.setText("");
     newTab.setGraphic(new Label(node.getContent().titleProperty().get()));
-//    node.getContent().installDragEventManager(newTab.getGraphic());
+    node.installDragEventManager(newTab.getGraphic());
     node.setParentContainer(this);
     newTab.closableProperty().bind(node.closeableProperty());
     newTab.setOnCloseRequest(event -> {

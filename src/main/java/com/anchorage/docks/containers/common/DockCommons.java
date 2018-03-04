@@ -19,13 +19,17 @@
 
 package com.anchorage.docks.containers.common;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.anchorage.docks.containers.interfaces.DockContainableComponent;
 import com.anchorage.docks.containers.subcontainers.DockSplitterContainer;
 import com.anchorage.docks.containers.subcontainers.DockTabberContainer;
 import com.anchorage.docks.node.DockNode;
+import com.anchorage.docks.node.DockNode.DockPosition;
+
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
-import javafx.scene.control.Tab;
 
 /**
  *
@@ -35,6 +39,10 @@ public class DockCommons {
 
     public static boolean isABorderPosition(DockNode.DockPosition position) {
         return position != DockNode.DockPosition.CENTER;
+    }
+    
+    public static DockSplitterContainer createSplitter(Node firstNode, Node secondNode, Orientation orientation, double percentage) {
+    		return createSplitter(firstNode, secondNode, orientation.equals(Orientation.VERTICAL) ? DockPosition.BOTTOM : DockPosition.RIGHT, percentage);
     }
 
     public static DockSplitterContainer createSplitter(Node existNode, Node newNode, DockNode.DockPosition position, double percentage) {
@@ -67,16 +75,26 @@ public class DockCommons {
     }
 
     public static DockTabberContainer createTabber(Node existNode, Node newNode, DockNode.DockPosition position) {
-        if (existNode instanceof DockNode && newNode instanceof DockNode) {
-            DockNode existDockNode = (DockNode) existNode;
-            DockNode newDockNode = (DockNode) newNode;
-            DockTabberContainer tabber = new DockTabberContainer();
-			tabber.addAsTab(existDockNode);
-			tabber.addAsTab(newDockNode);
-            tabber.getStyleClass().add("docknode-tab-pane");
-            newDockNode.ensureVisibility();
-            return tabber;
-        }
-        return null;
+    		List<Node> nodes = new ArrayList<>();
+    		nodes.add(existNode);
+    		nodes.add(newNode);
+    		
+    		return createTabber(nodes);
+    }
+    
+    public static DockTabberContainer createTabber(List<Node> nodes) {
+    		DockTabberContainer tabber = new DockTabberContainer();
+    		tabber.getStyleClass().add("docknode-tab-pane");
+    		for (Node node : nodes) {
+    			if (node instanceof DockNode) {
+    				DockNode newNode = (DockNode) node;
+    				tabber.addAsTab(newNode);
+    				newNode.ensureVisibility();
+    			}
+    		}
+    		if (tabber.getTabs().isEmpty()) {
+    			return null;
+    		}
+        return tabber;
     }
 }

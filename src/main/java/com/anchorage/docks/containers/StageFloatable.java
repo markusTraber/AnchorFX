@@ -222,4 +222,8 @@ public class StageFloatable extends Stage {
   public Insets getPaddingOffset() {
     return stackPanelContainer.getPadding();
   }
+  
+  public DockNode getDockNode() {
+	  return node;
+  }
 }
